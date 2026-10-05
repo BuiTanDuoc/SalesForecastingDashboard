@@ -1,0 +1,55 @@
+@page
+@model SalesForecastingDashboard.Pages.orders.IndexModel
+@{
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/views/orders-index.css?v=2" />
+}
+
+<h1 class="page-title">Sales</h1>
+
+<!-- Create Order Button (modern style) -->
+<div class="orders-header">
+    <a href="/orders/create" class="btn-new-sale">+ New Sale</a>
+</div>
+
+<div class="table-wrapper">
+    <table class="dark-table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Order Date</th>
+                <th>Stock Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        @foreach (var o in Model.Orders)
+        {
+            bool stockOk = o.Product.Stock > o.Product.SafetyStock;
+            bool isNew = Model.NewOrderId == o.Id;
+
+            <tr>
+                <td>
+                    @o.Id
+                    @if (isNew)
+                    {
+                        <span class="new-badge">NEW</span>
+                    }
+                </td>
+                <td>@o.Product.Name</td>
+                <td>@o.Quantity</td>
+                <td>@o.OrderDate.ToString("yyyy-MM-dd")</td>
+
+                <td class="@(stockOk ? "status-ok" : "status-low")">
+                    @(stockOk ? "OK" : "LOW")
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

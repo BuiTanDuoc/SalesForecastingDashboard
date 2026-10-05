@@ -1,0 +1,217 @@
+@page
+@model SalesForecastingDashboard.Pages.analytics.IndexModel
+@{
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/views/analytics.css" />
+}
+
+
+
+<h1 class="page-title">Analytics & Forecasting</h1>
+
+<a href="/export/full-analytics"
+        class="btn btn-outline-info"
+        download="reorder_suggestions.csv"
+        style="border-radius:8px; padding:8px 16px; font-weight:500; margin-bottom:15px"> Export CSV</a>
+
+
+ 
+
+<!-- 1) SATIŞ TRENDİ -->
+<div class="chart-card">
+    <h4>Sales Trend (Last 30 Days)</h4>
+    <canvas id="salesChart" height="80"></canvas>
+</div>
+
+<!-- 2) ÜRÜN SEÇİMLİ FORECAST GRAFİĞİ -->
+<div class="chart-card">
+    <h4>Forecast (Projected Demand per Product)</h4>
+
+    <label class="mt-2">Select Product</label>
+    <select id="productSelect" class="form-select mt-2" style="background:#000; color:#fff; border:1px solid #444;">
+        <!-- Optionsı JS ile dolduruyorum -->
+    </select>
+
+    <label class="mt-3">Select Forecast Days</label>
+    <input type="range" id="forecastDays" min="1" max="30" value="7" class="form-range" />
+    <p>Forecast Days: <span id="daysLabel">7</span> days</p>
+
+    <canvas id="forecastChart" height="80"></canvas>
+</div>
+
+<!-- 3) YENİDEN SİPARİŞ ÖNERİLERİ  -->
+
+<div class="chart-card">
+    <h4>Reorder Suggestions (next 7 days)</h4>
+    
+    @if (Model.ReorderSuggestions.Any())
+    {
+        <table class="table table-dark table-striped table-bordered mt-3 reorder-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Current Stock</th>
+                    <th>Safety Stock</th>
+                    <th>Avg Daily Sales</th>
+                    <th>Days Until Safety</th>
+                    <th>Recommended Order Qty</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.ReorderSuggestions)
+                {
+                    var statusClass =
+                        item.DaysUntilSafety == 0 ? "text-danger fw-bold" :
+                        item.DaysUntilSafety <= 7 ? "text-warning fw-bold" :
+                        "text-success";
+
+                    <tr>
+                        <td>@item.ProductName</td>
+                        <td>@item.CurrentStock</td>
+                        <td>@item.SafetyStock</td>
+                        <td>@item.AvgDailySales</td>
+                        <td class="@statusClass">
+                            @(item.DaysUntilSafety == int.MaxValue ? "-" : item.DaysUntilSafety)
+                        </td>
+                        <td class="fw-bold">@item.RecommendedOrderQty</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-muted mt-3">
+            All products are safely above safety stock level based on the last 30 days of sales.
+        </p>
+    }
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // ---- SERVER'DAN GELEN GRAFİK VERİSİ ----
+    const labels = @Html.Raw(Model.ChartLabelsJson);
+    const data   = @Html.Raw(Model.ChartDataJson);
+
+    // ---- SERVER'DAN GELEN ÜRÜN BAZLI FORECAST VERİSİ ----
+    const productForecastData = @Html.Raw(Model.ProductForecastJson);
+
+    /* ========================================================
+       1) SATIŞ TRENDİ GRAFİĞİ 
+    ========================================================== */
+    const salesCanvas = document.getElementById('salesChart');
+    const salesCtx = salesCanvas.getContext('2d');
+
+    const gradient = salesCtx.createLinearGradient(0, 0, 0, salesCanvas.height);
+    gradient.addColorStop(0, 'rgba(15,188,249,0.6)');
+    gradient.addColorStop(1, 'rgba(15,188,249,0)');
+
+    new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Daily Sales",
+                data: data,
+                borderColor: "#0fbcf9",
+                backgroundColor: gradient,
+                borderWidth: 2,
+                tension: 0.4, 
+                cubicInterpolationMode: 'monotone',
+                fill: true
+            }]
+        },
+        options: {
+            responsive:true,
+            scales: {
+                x: { ticks: { color: "#fff" } },
+                y: { ticks: { color: "#fff" }, beginAtZero: true }
+            }
+        }
+    });
+
+    /* ========================================================
+       2) FORECAST GRAFİĞİ — ürün seçme kısmı ekledim
+    ========================================================== */
+
+    let forecastChart;
+    const forecastCtx = document.getElementById('forecastChart').getContext('2d');
+    const productSelect = document.getElementById('productSelect');
+    const forecastDaysInput = document.getElementById('forecastDays');
+    const daysLabel = document.getElementById('daysLabel');
+
+    // Dropdown'u doldur
+    function populateProductSelect() {
+        productSelect.innerHTML = "";
+        if (!productForecastData || productForecastData.length === 0) {
+            const opt = document.createElement("option");
+            opt.textContent = "No product data";
+            opt.disabled = true;
+            opt.selected = true;
+            productSelect.appendChild(opt);
+            return;
+        }
+
+        productForecastData.forEach(p => {
+            const opt = document.createElement("option");
+            opt.value = p.productId;
+            opt.textContent = p.productName;
+            productSelect.appendChild(opt);
+        });
+    }
+
+    function updateForecast() {
+        if (!productForecastData || productForecastData.length === 0) return;
+
+        const days = Number(forecastDaysInput.value);
+        daysLabel.textContent = days;
+
+        const selectedId = productSelect.value || productForecastData[0].productId;
+        const product = productForecastData.find(p => p.productId == selectedId) || productForecastData[0];
+
+        const avg = product.avgDailySales || 0;
+        const forecastValues = [];
+
+        for (let i = 0; i < days; i++) {
+            forecastValues.push(avg * (i + 1));
+        }
+
+        if (forecastChart) {
+            forecastChart.destroy();
+        }
+
+        forecastChart = new Chart(forecastCtx, {
+            type: 'line',
+            data: {
+                labels: [...Array(days).keys()].map(i => `${i + 1}d`),
+                datasets: [{
+                    label: product.productName + " - Projected Demand",
+                    data: forecastValues,
+                    borderColor: "#ff4b4b",
+                    backgroundColor: "rgba(255,75,75,0.2)",
+                    borderWidth: 2,
+                    tension: 0.4,
+                    cubicInterpolationMode: "monotone",
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { ticks: { color: "#fff" } },
+                    y: { ticks: { color: "#fff" }, beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    populateProductSelect();
+    updateForecast();
+
+    forecastDaysInput.addEventListener("input", updateForecast);
+    productSelect.addEventListener("change", updateForecast);
+</script>

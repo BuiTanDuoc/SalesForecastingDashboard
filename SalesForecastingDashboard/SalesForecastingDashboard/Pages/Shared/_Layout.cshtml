@@ -1,0 +1,90 @@
+﻿@using SalesForecastingDashboard.Data
+
+@inject ProjectContext _context
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Inventory Dashboard</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Global Dark Theme -->
+    <link rel="stylesheet" href="~/css/base/global.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="~/css/base/global.css" />
+    <link rel="stylesheet" href="~/css/layout.css" />
+
+
+    <!-- Page-Specific CSS (Analytics, Orders, Products, Notifications...) -->
+    @RenderSection("Styles", required: false)
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-left">
+                <a class="logo" href="/">Inventory Dashboard</a>
+            </div>
+
+            <div class="nav-right">
+                <a href="/">Home</a>
+                <a href="/products">Products</a>
+                @* <a href="/products/create">Add Product</a> *@
+                <a href="/orders">Sales</a>
+                @* <a href="/orders/create">New Sale</a> *@
+                <a href="/analytics">Analytics</a>
+
+                <a href="/notifications" class="notification-icon" style="position: relative;">
+                    <i class="fa-solid fa-bell"></i>
+
+                    @if (ViewData["UnreadCount"] != null && (int)ViewData["UnreadCount"]! > 0)
+                    {
+                        <span style="
+                            position:absolute;
+                            top:-5px; right:-10px;
+                            background:red; color:white;
+                            border-radius:50%;
+                            padding:3px 7px;
+                            font-size:12px;">
+                            @ViewData["UnreadCount"]
+                        </span>
+                    }
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="footer text-muted">
+        <div class="container">
+            &copy; 2025 - SalesForecastingDashboard -
+            <a asp-area="" asp-page="/Privacy">Privacy</a>
+        </div>
+    </footer>
+
+    <!-- JS -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+</body>
+</html>

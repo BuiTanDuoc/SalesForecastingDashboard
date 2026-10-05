@@ -1,0 +1,139 @@
+@page
+@model SalesForecastingDashboard.Pages.products.IndexModel
+@{
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/views/products-index.css?v=3" />
+}
+
+<!-- HEADER WITH BUTTON -->
+<div class="products-header">
+    <h1 class="page-title">Products</h1>
+    <a href="/products/create" class="btn-new-sale">+ Add Product</a>
+</div>
+
+<p class="chart-subtitle">Current Stock Levels</p>
+
+<!-- CHART ?? turn back-->
+<div class="chart-wrapper">
+    <canvas id="stockLineChart"></canvas>
+</div>
+
+<!-- PRODUCT TABLE -->
+<div class="table-wrapper">
+    <table class="dark-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Stock</th>
+                <th>Safety Stock</th>
+                <th style="width:140px;">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var product in Model.Products)
+            {
+                <tr>
+                    <td>@product.Name</td>
+                    <td>@product.Stock</td>
+                    <td>@product.SafetyStock</td>
+
+                    <td>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@product.Id"
+                              onsubmit="return confirm('Are you sure you want to delete this product?');">
+                            <button class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const labels = @Html.Raw(Json.Serialize(Model.Products.Select(p => p.Name)));
+        const stockData = @Html.Raw(Json.Serialize(Model.Products.Select(p => p.Stock)));
+        const safetyStock = @Html.Raw(Json.Serialize(Model.Products.Select(p => p.SafetyStock)));
+
+        const canvas = document.getElementById("stockLineChart");
+
+        if (canvas) {
+            const ctx = canvas.getContext("2d");
+
+            // GLOBAL GRADIENT
+            const greenGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            greenGradient.addColorStop(0, "rgba(0,210,106,0.6)");
+            greenGradient.addColorStop(1, "rgba(0,210,106,0)");
+
+            const redGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            redGradient.addColorStop(0, "rgba(255,70,70,0.6)");
+            redGradient.addColorStop(1, "rgba(255,70,70,0)");
+
+            new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Stock Level",
+                        data: stockData,
+
+                        /* Base color (green) */
+                        borderColor: "rgba(0,210,106,1)",
+                        backgroundColor: greenGradient,
+
+                        segment: {
+                            borderColor: ctx2 => {
+                                const i = ctx2.p0DataIndex;
+                                return stockData[i] <= safetyStock[i]
+                                    ? "rgba(255,70,70,1)"
+                                    : "rgba(0,210,106,1)";
+                            },
+                            backgroundColor: ctx2 => {
+                                const i = ctx2.p0DataIndex;
+                                return stockData[i] <= safetyStock[i]
+                                    ? redGradient
+                                    : greenGradient;
+                            }
+                        },
+
+                        borderWidth: 3,
+                        tension: 0.42,
+                        cubicInterpolationMode: "monotone",
+                        fill: true,
+
+                        pointRadius: 5,
+                        pointBackgroundColor: ctx2 => {
+                            const i = ctx2.dataIndex;
+                            return stockData[i] <= safetyStock[i]
+                                ? "rgba(255,70,70,1)"  // red point
+                                : "rgba(0,210,106,1)"; // green point
+                        },
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { labels: { color: "white" } }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: "white" },
+                            grid: { color: "rgba(255,255,255,0.05)" }
+                        },
+                        y: {
+                            ticks: { color: "white" },
+                            grid: { color: "rgba(255,255,255,0.05)" }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+}

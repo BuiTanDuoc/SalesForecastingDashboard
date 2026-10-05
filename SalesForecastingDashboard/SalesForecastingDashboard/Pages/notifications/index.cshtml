@@ -1,0 +1,43 @@
+@page
+@model SalesForecastingDashboard.Pages.notifications.IndexModel
+@{
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/views/notifications.css" />
+}
+
+<div class="notifications-container">
+
+    <h1 class="notif-title">Notifications</h1>
+
+    <!-- BUTTONS -->
+    <div class="notif-actions">
+        <form method="post" asp-page-handler="MarkAllAsRead">
+            <button class="notif-btn btn-mark" type="submit">Mark All as Read</button>
+        </form>
+
+        <form method="post" asp-page-handler="DeleteAll">
+            <button class="notif-btn btn-delete" type="submit">Delete All</button>
+        </form>
+    </div>
+
+    <!-- LIST -->
+    <div class="notif-list">
+        @foreach (var n in Model.Notifications)
+        {
+            <div class="notif-card @(n.IsRead ? "" : "notif-unread")">
+
+                @if (!n.IsRead)
+                {
+                    <span class="notif-dot"></span>
+                }
+
+                <p class="notif-msg">@n.Message</p>
+                <p class="notif-date">@n.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+            </div>
+        }
+    </div>
+
+</div>

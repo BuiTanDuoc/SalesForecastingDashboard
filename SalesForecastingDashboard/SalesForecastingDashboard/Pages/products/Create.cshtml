@@ -1,0 +1,60 @@
+@page
+@model SalesForecastingDashboard.Pages.products.CreateModel
+@{
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/views/products-create.css?v=2" />
+}
+
+<div class="create-header">
+    <h1 class="create-title">Add New Product</h1>
+    <p class="create-desc">Track inventory more accurately by adding your new item.</p>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="message-error">@Model.ErrorMessage</div>
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="message-success">@Model.SuccessMessage</div>
+}
+
+<div class="form-box">
+    <form method="post">
+
+        <!-- PRODUCT NAME -->
+        <div class="form-group">
+            <label class="form-label">Product Name</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-tag input-icon"></i>
+                <input asp-for="Product.Name" placeholder="e.g., Rose" class="form-control" />
+            </div>
+        </div>
+
+        <!-- STOCK -->
+        <div class="form-group">
+            <label class="form-label">Stock Amount</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-boxes-stacked input-icon"></i>
+                <input asp-for="Product.Stock" type="number" placeholder="e.g., 25" class="form-control" />
+            </div>
+        </div>
+
+        <!-- SAFETY STOCK -->
+        <div class="form-group">
+            <label class="form-label">Safety Stock</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-shield-halved input-icon"></i>
+                <input asp-for="Product.SafetyStock" type="number" placeholder="e.g., 5" class="form-control" />
+            </div>
+        </div>
+
+        <button type="submit" class="btn-save">
+            <i class="fa-solid fa-floppy-disk"></i> Save Product
+        </button>
+    </form>
+</div>

@@ -1,0 +1,72 @@
+﻿@page
+@model SalesForecastingDashboard.Pages.PrivacyModel
+@{
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/views/privacy.css" />
+}
+
+<div class="privacy-container">
+    <h1 class="privacy-title">Privacy Policy</h1>
+
+    <div class="privacy-box">
+
+        <p class="privacy-intro">
+            This dashboard application is designed for internal use and handles only operational data
+            required for inventory and sales management. No personal or sensitive data is collected.
+        </p>
+
+        <h2>1. Data We Collect</h2>
+        <p>The system stores only essential operational information:</p>
+        <ul>
+            <li>Product data (name, stock, safety stock)</li>
+            <li>Order records (product, quantity, date)</li>
+            <li>Notification logs</li>
+            <li>System errors and diagnostic logs</li>
+        </ul>
+
+        <h2>2. How We Use the Data</h2>
+        <p>The collected data is used exclusively for:</p>
+        <ul>
+            <li>Displaying accurate stock and sales information</li>
+            <li>Triggering low-stock alerts</li>
+            <li>Sending automated daily summary emails</li>
+            <li>Ensuring stable application performance</li>
+        </ul>
+
+        <h2>3. Email Notifications</h2>
+        <p>
+            The system sends daily inventory reports to designated email addresses.
+            These emails contain only operational data and no personal information.
+        </p>
+
+        <h2>4. Security</h2>
+        <p>
+            All operational data is securely stored in a protected database.
+            Access is restricted to authorized users only.
+        </p>
+
+        <h2>5. External Services</h2>
+        <p>
+            Email delivery may use external SMTP providers solely to transmit
+            daily reports. No user personal data is shared.
+        </p>
+
+        <h2>6. Policy Updates</h2>
+        <p>
+            This Privacy Policy may be updated periodically to reflect system improvements.
+            The latest version will always appear on this page.
+        </p>
+
+        <h2>7. Contact</h2>
+        <p>
+        For questions about this Privacy Policy, email us at:
+         <a href="mailto:brcksdagi@gmail.com" class="highlight-email">
+         brcksdagi@gmail.com
+         </a>
+       </p>
+
+    </div>
+</div>

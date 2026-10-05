@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SalesForecastingDashboard.Data;
+using SalesForecastingDashboard.Models;
+using SalesForecastingDashboard.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,28 +9,32 @@ builder.Services.AddDbContext<ProjectContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")) //verıtabanına baglandık
 );
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddHostedService<NotificationService>();
+
+builder.Services.AddRazorPages();
+
+builder.Services.AddSingleton<EmailService>();
+builder.Services.AddHostedService<DailyReportService>();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
 
+app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorPages();
+
+app.MapControllers();
 
 app.Run();

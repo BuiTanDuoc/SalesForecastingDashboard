@@ -1,0 +1,196 @@
+@page "/" 
+@model SalesForecastingDashboard.Pages.Home.IndexModel
+@{
+    Layout = "_Layout"; //referances for global parts of pages; footer,navbar etc.
+    ViewData["Title"] = "BloomTrack – Inventory Dashboard";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/views/home.css" />
+}
+
+<div class="home-hero">
+    <div class="home-hero-content">
+        <h1 class="home-title">BloomTrack</h1>
+        <p class="home-subtitle">
+            A smart inventory & sales forecasting dashboard for your flower shop. 
+            Track stock levels, visualize 7-day sales trends and never miss a reorder point again.
+        </p>
+
+        <div class="home-actions">
+            <a href="/analytics" class="btn-home">View Analytics</a>
+            <a href="/products" class="btn-home-secondary">Manage Products</a>
+        </div>
+    </div>
+</div>
+
+<!-- SUMMARY CARDS -->
+<section class="home-summary">
+
+    <div class="summary-card">
+        <div class="summary-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+        <div class="summary-label">Total Products</div>
+        <div class="summary-value">@Model.TotalProducts</div> <!-- in cs -->
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+        <div class="summary-label">Orders Today</div>
+        <div class="summary-value">@Model.OrdersToday</div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="summary-label">Last 7 Days Sales</div>
+        <div class="summary-value">@Model.Last7DaysSales</div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-icon warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="summary-label">Low Stock Items</div>
+        <div class="summary-value">@Model.LowStockCount</div>
+    </div>
+
+</section>
+
+<!-- MAIN GRID: CHART + TODAY STATS: LEFT SIDE -->
+<section class="home-main">
+
+    <!-- SALES TREND -->
+    <div class="home-card chart-card">
+        <div class="home-card-header">
+            <h2>Last 7 Days Sales</h2>
+            <span class="home-chip">Quantity per Day</span>
+        </div>
+
+        <canvas id="homeSalesChart" height="100"></canvas>
+    </div>
+
+    <!-- TODAY'S SNAPSHOT: RIGHT SIDE -->
+    <div class="home-card today-panel">
+        <div class="home-card-header"><h2>Today’s Snapshot</h2></div>
+
+        <div class="today-metric">
+            <span class="today-label">Total Units Sold Today</span>
+            <span class="today-value">@Model.TodayTotalSales</span>
+        </div>
+
+        <div class="today-metric">
+            <span class="today-label">Orders Today</span>
+            <span class="today-value">@Model.TodayOrdersCount</span>
+        </div>
+
+        <div class="today-metric">
+            <span class="today-label">Top Product Today</span>
+            <span class="today-value">
+                @(string.IsNullOrEmpty(Model.TodayTopProductName) 
+                    ? "No sales yet" 
+                    : $"{Model.TodayTopProductName} ({Model.TodayTopProductQty})")
+            </span>
+        </div>
+
+        <div class="today-metric">
+            <span class="today-label">Avg Daily Sales (7d)</span>
+            <span class="today-value">@Model.TodayAvgDailySales</span>
+        </div>
+
+        <div class="today-hint">Updated based on orders recorded in the system.</div>
+    </div>
+
+</section>
+
+<!-- TOP 5 BEST SELLERS -->
+<section class="home-top-sellers">
+    <div class="home-card">
+        <div class="home-card-header">
+            <h2>Top 5 Best Sellers</h2>
+            <span class="home-chip soft">Last 30 days</span>
+        </div>
+
+        @if (Model.TopProducts != null && Model.TopProducts.Any())
+        {
+            <div class="top-list">
+                @foreach (var item in Model.TopProducts)
+                {
+                    <div class="top-item">
+
+                        <div class="top-item-main">
+                            <span class="top-name">@item.Name</span>
+                            <span class="top-quantity">@item.TotalSold sold</span>
+                        </div>
+
+                        <div class="top-bar">
+                            <div class="top-bar-fill" style="width:@item.BarWidthPercent%">
+                                
+                            </div>
+                        </div>
+
+                    </div> 
+                }
+            </div>
+        }
+        else
+        {
+            <p class="top-empty">No sales recorded yet.</p>
+        }
+    </div>
+</section>
+
+<!-- LAST BUTTONS -->
+<section class="home-cta">
+    <div class="home-cta-inner">
+        <h3>Ready to dive deeper?</h3>
+        <p>Jump into detailed analytics, manage your products or record new sales.</p>
+
+        <div class="home-cta-actions">
+            <a href="/analytics" class="btn-home">Open Analytics</a>
+            <a href="/orders/create" class="btn-home-secondary">Record New Sale</a>
+        </div>
+    </div>
+</section>
+
+<!--for chart graph (7days sales trend) -->
+@section Scripts { 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const labels = @Html.Raw(Model.ChartLabelsJson);
+        const dataValues = @Html.Raw(Model.ChartDataJson);
+
+        const c = document.getElementById('homeSalesChart');
+
+        if (c) {
+            const ctx = c.getContext('2d');
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, c.height);
+            gradient.addColorStop(0, 'rgba(15,188,249,0.55)');
+            gradient.addColorStop(1, 'rgba(15,188,249,0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataValues,
+                        label: "Units Sold",
+                        borderColor: "#0fbcf9",
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        tension: 0.35,
+                        pointRadius: 4,
+                        pointBackgroundColor: "#0fbcf9",
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: "#ccc" }, grid: { display: false } },
+                        y: { ticks: { color: "#ccc" }, grid: { color: "rgba(255,255,255,0.08)" } }
+                    }
+                }
+            });
+        }
+    </script>
+}
