@@ -1,4 +1,11 @@
+﻿using Microsoft.EntityFrameworkCore;
+using SalesForecastingDashboard.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<ProjectContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")) //verıtabanına baglandık
+);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
