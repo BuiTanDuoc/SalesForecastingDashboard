@@ -1,0 +1,67 @@
+/* --- PAGE LAYOUT --- */
+.privacy-container {
+    width: 80%;
+    max-width: 1100px;
+    margin: 50px auto;
+    padding-bottom: 40px;
+    animation: fadeIn 0.6s ease;
+}
+
+/* TITLE */
+.privacy-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: #0fbcf9;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* CONTENT BOX */
+.privacy-box {
+    background: #111;
+    padding: 35px 40px;
+    border-radius: 16px;
+    border: 1px solid #222;
+    box-shadow: 0 0 25px rgba(0,0,0,0.45);
+}
+
+.privacy-box h2 {
+    color: #0fbcf9;
+    font-size: 22px;
+    margin-top: 25px;
+    margin-bottom: 10px;
+}
+
+.privacy-box p,
+.privacy-box li {
+    color: #d6d6d6;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.privacy-intro {
+    margin-bottom: 20px;
+    color: #e8f8ff;
+}
+
+/* LIST STYLING */
+.privacy-box ul {
+    margin-left: 18px;
+    margin-bottom: 12px;
+}
+
+.privacy-box li {
+    margin-bottom: 6px;
+}
+
+/* HIGHLIGHTED EMAIL */
+.highlight-email {
+    color: #0da9e2;
+    font-weight: 600;
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

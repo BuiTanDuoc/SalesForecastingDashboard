@@ -1,0 +1,25 @@
+
+    body { background:#000; color:#fff; }
+
+    .chart-card {
+        width: 90%;
+        margin: 30px auto;
+        background: #111;
+        padding: 25px;
+        border-radius: 12px;
+        border: 1px solid #333;
+    }
+
+    .reorder-table td, .reorder-table th {
+        vertical-align: middle;
+    }
+
+   .page-title {
+        font-size: 32px;
+        text-align: center;
+        margin-top: 25px;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    
